@@ -1,0 +1,48 @@
+services:
+
+  database:
+    image: postgres:17-alpine
+    container_name: pern-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - 5434:5432
+    
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: pern-backend-image:v1.0
+    container_name: pern-backend-container
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      API_PORT: ${API_PORT}
+    ports:
+      - 3001:3000
+    depends_on:
+      - database
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: pern-frontend-image:v1.0
+    container_name: pern-frontend-container
+    environment:
+      API_URL: http://localhost:${API_PORT}
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  postgres-data:
+

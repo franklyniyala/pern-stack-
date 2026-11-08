@@ -1,0 +1,32 @@
+name: Pern Stack CD
+
+on: 
+  workflow_run:
+    workflows:
+      - Pern Stack CI
+
+    types:
+      - completed 
+    branches:
+      - main
+      - develop
+
+jobs: 
+  deploy: 
+    name: Deploy Application
+    runs-on: self-hosted
+
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push'
+
+    steps:
+      - name: Checkout Successful CI Commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha}}
+  
+  
+
+
+

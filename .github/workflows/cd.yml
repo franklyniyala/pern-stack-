@@ -25,6 +25,19 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha}}
+
+      - name: Deploy Application
+        run: |
+           echo "Deploying application..."
+           docker compose -f ./docker-compose.yml up -d --build
+
+      - name: Verify Deployment
+        run: |
+          echo "Verifying Deployment..."
+          docker compose -f ./docker-compose.yml ps
+
+        
+
   
   
 

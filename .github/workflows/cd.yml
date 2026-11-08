@@ -1,18 +1,17 @@
 name: Pern Stack CD
 
-on: 
+on:
   workflow_run:
     workflows:
       - Pern Stack CI
-
     types:
-      - completed 
+      - completed
     branches:
       - main
-      - develop
+      
 
-jobs: 
-  deploy: 
+jobs:
+  deploy:
     name: Deploy Application
     runs-on: self-hosted
 
@@ -24,17 +23,34 @@ jobs:
       - name: Checkout Successful CI Commit
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha}}
+          ref: ${{ github.event.workflow_run.head_sha }}
 
-      - name: Deploy Application
+      - name: Update Deployment Repository
         run: |
-           echo "Deploying application..."
-           docker compose -f ./docker-compose.yml up -d --build
+          cd /home/franklyn/my_folder/cloned_repos/Undeployed/pern-stack
+
+          git fetch origin ${{ github.event.workflow_run.head_sha }}
+          git reset --hard ${{ github.event.workflow_run.head_sha }}
+
+      - name: Build and Deploy Application
+        run: |
+          cd /home/franklyn/my_folder/cloned_repos/Undeployed/pern-stack
+
+          docker compose up -d --build
+
+      - name: Run Database Migrations
+        run: |
+          cd /home/franklyn/my_folder/cloned_repos/Undeployed/pern-stack
+
+          docker compose exec -T backend npm run migrate
 
       - name: Verify Deployment
         run: |
-          echo "Verifying Deployment..."
-          docker compose -f ./docker-compose.yml ps
+          cd /home/franklyn/my_folder/cloned_repos/Undeployed/pern-stack
+
+          docker compose ps
+
+          curl --fail http://localhost:3001/api/health/ready
 
         
 
